@@ -1,0 +1,139 @@
+---
+title: "Football Simulation"
+author: "Max Jones"
+date: "2/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Initialize variables
+```{r}
+set.seed(1202001)
+fieldpos = 25
+down = 1
+ytg = 3
+scoreA = 0
+scoreB = 0
+possession = "A"
+scoreboard <- cbind("A" = scoreA, "B" = scoreB)
+```
+
+
+## Function to create simulation
+```{r}
+next_score <- function(fieldpos, down, ytg){
+  
+  reset <- function(){                                          ##Reset function
+  down <<- 1
+  ytg <<- 10
+  }
+  fieldpos = fieldpos
+  down = down
+  ytg = ytg
+  
+  print(sprintf("Team A starts with the ball at the %s yard line on down %s with %s yards to go", 
+                fieldpos, down, ytg))
+  
+  while(fieldpos < 100){                                        ##Before/after anyone scores
+    
+ ################################################################################ 1st-4th down   
+    while(down < 5){                                            
+      
+      if(ytg > 0){
+        play1 <- round(rnorm(1, mean = 2, sd = 1))
+        fieldpos = fieldpos + play1
+        ytg = ytg - play1
+        down = down + 1
+      }
+      
+      if(fieldpos >= 100){
+        break
+      }
+    
+      if(ytg <= 0)                              ##If converted before 4th down, new 1st
+      {
+        reset()
+      }
+        
+    }
+################################################################################# Result of 4th down: 
+    if(fieldpos >= 100){
+      
+    }
+    if(down == 5){                                                              
+      if(ytg <= 0){
+        reset()
+      }
+      else if(ytg > 0 && possession == "A"){
+        possession = "B"
+        print(sprintf("Team A turned the ball over at the %s yard line", fieldpos))
+        fieldpos = 100 - fieldpos 
+        reset()
+      }
+      else if(ytg > 0 && possession == "B"){
+        possession = "A"
+        print(sprintf("Team B turned the ball over at the %s yard line", fieldpos))
+        fieldpos = 100 - fieldpos 
+        reset()
+    }
+    }
+################################################################################### TOUCHDOWNS
+    if(fieldpos >= 100 && possession == "A"){
+      scoreA <<- scoreA + 7
+      possession = "B"
+      scoreboard <- cbind("A" = scoreA, "B" = scoreB)
+      print("Team A just scored :). The current score is:")
+      print(scoreboard)
+      reset()
+      fieldpos = 25
+      break
+    }
+    if(fieldpos >= 100 && possession == "B"){
+      scoreB <<- scoreB + 7
+      possession = "A"
+      scoreboard <- cbind("A" = scoreA, "B" = scoreB)
+      print("Team B just scored :). The current score is:")
+      print(scoreboard)
+      reset()
+      fieldpos = 25
+      break
+############################################################################### SAFETIES      
+    if(fieldpos <= 0 && possession == "A"){
+      scoreA <<- scoreB + 2
+      possession = "B"
+      scoreboard <<- cbind("A" = scoreA, "B" = scoreB)
+      print("Team B just scored a safety on Team A :/. The current score is:")
+      print(scoreboard)
+      reset()
+      fieldpos = 25
+      break
+    }
+      if(fieldpos <= 0 && possession == "B"){
+      scoreA <<- scoreA + 2
+      possession = "A"
+      scoreboard <<- cbind("A" = scoreA, "B" = scoreB)
+      print("Team A just scored a safety on Team B :/. The current score is:")
+      print(scoreboard)
+      reset()
+      fieldpos = 25
+      break
+    }
+      
+      
+    }
+  }
+}
+```
+
+## Run the simulation
+```{r}
+##Run the function for any given scenario--will keep score going
+next_score(85, 1, 1)
+```
+
+
